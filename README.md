@@ -1,1 +1,1 @@
-# stocks-prections
+# stocks-predictions
