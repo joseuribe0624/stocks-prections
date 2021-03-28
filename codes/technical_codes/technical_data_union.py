@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 #pd.set_option("display.max.rows", rows)
 stocks = ['NSC', 'GL', 'PEP', 'BDX', 'IBM']
 
-PATH = "../technical_daily/"
+PATH = "../../data/technical_data/quarterly/"
 
 df = pd.DataFrame()
 for stock in stocks:
@@ -44,5 +44,5 @@ for stock in stocks:
   data.columns=columns
   df = pd.concat([df, data], axis=1).sort_index(axis=1)
 
-df.to_csv("testconcat.csv")
+df.to_csv("testconcat2.csv")
 

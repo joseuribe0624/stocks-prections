@@ -31,6 +31,8 @@ stonks=['BK','STT','CL','HIG','ED','KEY','CFG','MCK','DE','PG','BRK-B','NOV',
 'CSCO','XLNX','FISV','CNC','CDW','NEE','PNW','QCOM','MO','ABC','DFS','PEAK','DISCA',
 'CB','DISCK','HOLX','ALK','FRC','STE']
 
+#data = yf.download(tickers = stonks, start="1985-03-01", end="2020-12-31", group_by = 'ticker',
+#    auto_adjust = True, prepost = True, threads = True, proxy = None)
 data = yf.download(tickers = stonks, start="1985-03-01", end="2020-12-31", group_by = 'ticker',
     auto_adjust = True, prepost = True, threads = True, proxy = None)
 data.to_csv('./stonks_technical/'+stonks[i]+'.csv')
