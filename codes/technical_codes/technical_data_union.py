@@ -6,10 +6,10 @@ import matplotlib.pyplot as plt
 #rows, cols = 50, 50
 #pd.set_option("display.max.columns", cols)
 #pd.set_option("display.max.rows", rows)
-stocks = ['NSC', 'GL', 'PEP', 'BDX', 'IBM']
+stocks = ['PEP', 'IBM']
 
-PATH = "../../data/technical_data/quarterly/"
-
+#PATH = "../../data/technical_data/quarterly/"
+PATH = "./data/"
 df = pd.DataFrame()
 for stock in stocks:
   data = pd.read_csv(PATH+ stock +'.csv', header=0, index_col=0)
@@ -44,5 +44,5 @@ for stock in stocks:
   data.columns=columns
   df = pd.concat([df, data], axis=1).sort_index(axis=1)
 
-df.to_csv("testconcat2.csv")
+df.to_csv("dataBacktesting.csv")
 
