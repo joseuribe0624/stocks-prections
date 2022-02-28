@@ -190,15 +190,92 @@ def model_results_revised(data, model, label=None, start='1985-03', end='2020-09
 			"X_test:",X_test.shape,
 			"y_test:",len(y_test)
 		)
+	#return model
+	return rmse_test, mape_test, mae_test
+
+def model_results_revised_pred(data, model, label=None, start='1985-03', end='2020-09', scaling=True, verbose=False, debug=False, graphs=True, metrics=True):
+	# Data preparation
+	if scaling:
+		X_scaled, y_scaled, X_train, X_test, y_train, y_test = data['XY']
+	else:
+		X_scaled, y_scaled, X_train, X_test, y_train, y_test = data['X']
+	sc = data['scl']
+	data = data['data']
+
+	# Train the model
+	model.fit(X_train, y_train)
+
+    # Predict
+	if scaling:
+		PRED = sc.inverse_transform(model.predict(X_scaled))
+		y_scaled = sc.inverse_transform(y_scaled)
+
+		y_test = sc.inverse_transform(y_test)
+		test_pred = sc.inverse_transform(model.predict(X_test))
+	else:
+		PRED = model.predict(X_scaled)
+		test_pred = model.predict(X_test)
+
+	if graphs:
+		# Visualization
+		# Plot parameters
+		START_DATE_FOR_PLOTTING = start
+		ENDING_DATE_FOR_PLOTTING = end
+		START_INDEX = data.index.get_loc(START_DATE_FOR_PLOTTING)
+		ENDING_INDEX = data.index.get_loc(ENDING_DATE_FOR_PLOTTING)
+		fig1,ax1 = plt.subplots(figsize=(20,10))
+
+		plt.plot(data.index[START_INDEX:ENDING_INDEX], PRED[START_INDEX:ENDING_INDEX], color='red', label='Predicted Stock Price')
+		plt.plot(data.index[START_INDEX:ENDING_INDEX], y_scaled[START_INDEX:ENDING_INDEX], color='b', label='Actual Stock Price')
+
+		plt.grid(which='major', color='#cccccc', alpha=0.5)
+
+		s = str(model.get_params)
+
+		plt.legend(shadow=True)
+		plt.title(label+' RandSplit '+s[s.find("(")+1:s.find(")")], family='DejaVu Sans', fontsize=12)
+		plt.xlabel('Timeline', family='DejaVu Sans', fontsize=10)
+		plt.ylabel('Stock Price Value', family='DejaVu Sans', fontsize=10)
+		plt.xticks(rotation=90, fontsize=5)
+		plt.show()
+
+	rmse_test = mean_squared_error(y_test, test_pred, squared=False)
+	mape_test = mean_absolute_percentage_error(y_test, test_pred)
+	mae_test = mean_absolute_error(y_test, test_pred)
+
+    # Display metrics
+	if metrics:
+		print(
+			"{} MODEL RESULTS\n".format(label),
+			"RMSE\n",
+			"\tTest: {}\n".format(rmse_test),
+			"MAPE\n",
+			"\tTest: {}\n".format(mape_test),
+			"MAE\n",
+			"\tTest: {}\n".format(mae_test),
+			"R2 Score Adj\n",
+			"\tTest: {}\n".format(1-(1-r2_score(y_test, test_pred))*(len(y_test)-1)/(len(y_test)-X_scaled.shape[1]-1)),
+		)
+
+	if verbose:
+		print(str(model.get_params()))
+
+	if debug:
+		print(
+			"X_train:",X_train.shape,
+			"y_train:",len(y_train),
+			"X_test:",X_test.shape,
+			"y_test:",len(y_test)
+		)
 
 	#return rmse_test, mape_test, mae_test
-	return model
-
+	#return model
+	return (data.index, PRED, y_scaled)
 
 def make_dict(filename, PATH, test_size=0.2, random_state=2021):
 	datas = {'NSC':{'XY':0, 'X':0, 'scl':0, 'index':0}, 'GL':{'XY':0, 'X':0, 'scl':0, 'index':0}, 'PEP':{'XY':0, 'X':0, 'scl':0, 'index':0}, 'BDX':{'XY':0, 'X':0, 'scl':0, 'index':0}, 'IBM':{'XY':0, 'X':0, 'scl':0, 'index':0}}
-	#for stock in ['NSC', 'GL', 'PEP', 'BDX', 'IBM']:
-	for stock in ['PEP', 'IBM']:
+	for stock in ['NSC', 'GL', 'PEP', 'BDX', 'IBM']:
+	#for stock in ['PEP', 'IBM']:
 		data = pd.read_csv(PATH+filename.format(stock), header=0, index_col=0, low_memory=False)
 		data.sort_index(ascending=True, inplace=True)
 		X_scaled = np.array(data.drop(['Prediction'], axis=1))

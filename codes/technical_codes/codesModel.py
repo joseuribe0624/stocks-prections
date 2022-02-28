@@ -141,7 +141,52 @@ def allStock(data,clf,p, isScaled=False):
         print("mae:",mae)
         print("rmse:",rmse)
         print("mape:",mape)
-    
+
+def allModel(data,dataTest,clf,p, isScaled=False):
+    #pep y ibm
+    results={'PEP':[],'IBM':[]}
+    for stock in [ 'PEP','IBM']:
+        display(stock)
+        df = data.xs(stock, level=1, axis=1)
+        df2 = dataTest.xs(stock, level=1, axis=1)
+        df.sort_index(ascending=True, inplace=True)
+        df2.sort_index(ascending=True, inplace=True)
+        #X = np.array(df.drop(['CloseNext'], axis=1))
+        X_scaled = np.array(df.drop(['CloseNext'], axis=1), dtype=np.float64)
+        X_scaled2 = np.array(df2.drop(['CloseNext'], axis=1), dtype=np.float64)
+        #ESCALO LAS DE TRAIN
+        sc=StandardScaler()
+        X_scaled = sc.fit_transform(X_scaled)
+        #escalo las de test
+        sc2=StandardScaler()
+        X_scaled2 = sc.fit_transform(X_scaled2)
+        
+        if isScaled:
+            sc_predict = StandardScaler()
+            y_scaled = sc_predict.fit_transform(df.values[:, df.columns.get_loc('CloseNext'):df.columns.get_loc('CloseNext')+1])
+            sc_predict2 = StandardScaler()
+            y_scaled2 = sc_predict2.fit_transform(df2.values[:, df2.columns.get_loc('CloseNext'):df2.columns.get_loc('CloseNext')+1])
+        else:
+            y_scaled = np.array(df['CloseNext'], dtype=np.float64)
+            y_scaled2 = np.array(df2['CloseNext'], dtype=np.float64)
+        
+   
+        X_train, X_test, y_train, y_test = train_test_split(X_scaled, y_scaled, test_size=0.3,random_state=2021)
+        y_train = y_train.ravel()
+        y_test = y_test.ravel()
+        clf.fit(X_train,y_train)
+        
+        PRED = clf.predict(X_scaled2)
+        
+        if isScaled:
+            PRED= sc_predict2.inverse_transform(PRED)
+            y_scaled2 = np.array(sc_predict2.inverse_transform(y_scaled2))
+        
+        results[stock].append(PRED)
+        results[stock].append(y_scaled2)
+   
+    return results   
+        
 def allStockManually(data,dataTest,clf,p, isScaled=False):
     #pep y ibm
     results=[]
